@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile } from 'obsidian';
 
 // Remember to rename these classes and interfaces!
 
@@ -13,8 +13,27 @@ const DEFAULT_SETTINGS: MetadataCollapsePluginSettings = {
 export default class MetadataCollapsePlugin extends Plugin {
 	settings: MetadataCollapsePluginSettings;
 
+	onOpen(file: TFile | null) {
+		//console.log('file opened', file)
+		window.setTimeout(() => this.collapse(), 100)
+	}
+
+	collapse() {
+		var editor = this.app.workspace.activeEditor;
+		if (editor == null) return;
+		var metaDataEditor = editor.metadataEditor;
+		if (!metaDataEditor.collapsed)
+			metaDataEditor.toggleCollapse();
+	}
+
 	async onload() {
-		await this.loadSettings();
+		console.log('loading Metadata Collapse plugin')
+		this.app.workspace.onLayoutReady(() => {
+			this.registerEvent(this.app.workspace.on('file-open', this.onOpen, this));
+		});
+
+
+		/*await this.loadSettings();
 
 		// This creates an icon in the left ribbon.
 		const ribbonIconEl = this.addRibbonIcon('dice', 'MetadataCollapse Plugin', (evt: MouseEvent) => {
@@ -75,11 +94,11 @@ export default class MetadataCollapsePlugin extends Plugin {
 		});
 
 		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
-		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
+		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));*/
 	}
 
 	onunload() {
-
+		console.log('unloading Metadata Collapse plugin')
 	}
 
 	async loadSettings() {
@@ -97,12 +116,12 @@ class SampleModal extends Modal {
 	}
 
 	onOpen() {
-		const {contentEl} = this;
+		const { contentEl } = this;
 		contentEl.setText('Woah!');
 	}
 
 	onClose() {
-		const {contentEl} = this;
+		const { contentEl } = this;
 		contentEl.empty();
 	}
 }
@@ -116,7 +135,7 @@ class SampleSettingTab extends PluginSettingTab {
 	}
 
 	display(): void {
-		const {containerEl} = this;
+		const { containerEl } = this;
 
 		containerEl.empty();
 
